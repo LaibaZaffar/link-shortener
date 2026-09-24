@@ -1,0 +1,10 @@
+[tool.pytest.ini_options]
+# Adds the project root to Python's import path so the tests can do
+# "from app.main import app".
+#
+# Without this, only "python -m pytest" works: that form puts the current
+# directory on the import path, while a bare "pytest" does not. CI runs the
+# bare form, so leaving this out means tests that pass locally fail on
+# GitHub with "No module named 'app'".
+pythonpath = ["."]
+testpaths = ["tests"]
