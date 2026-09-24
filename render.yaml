@@ -1,5 +1,12 @@
-# Render "Blueprint": creates the web service AND the database in one go.
-# In Render, choose New > Blueprint and point it at your GitHub repo.
+# Render "Blueprint": describes the web service so the deploy is repeatable
+# instead of a pile of settings someone clicked once.
+#
+# In Render: New > Blueprint, then pick this repo.
+#
+# The database is deliberately NOT created here. Render's free PostgreSQL is
+# deleted after 30 days, which would quietly break a link on your CV. Use a
+# free Neon database instead and paste its connection string into the
+# DATABASE_URL variable below.
 services:
   - type: web
     name: link-shortener
@@ -11,15 +18,19 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.3"
-      - key: SECRET_KEY
-        generateValue: true          # Render invents a strong secret for you
-      - key: BASE_URL
-        sync: false                  # paste your live URL here after the first deploy
-      - key: DATABASE_URL
-        fromDatabase:
-          name: link-shortener-db
-          property: connectionString
 
-databases:
-  - name: link-shortener-db
-    plan: free
+      # Render invents a long random value and keeps it secret.
+      # It signs the login cookie, so changing it logs everyone out.
+      - key: SECRET_KEY
+        generateValue: true
+
+      # sync: false means "ask me for this in the dashboard, don't store it
+      # in the repo". Both of these are filled in by hand:
+      #
+      #   DATABASE_URL - the connection string from your Neon project
+      #   BASE_URL     - your live address, e.g. https://link-shortener-xxxx.onrender.com
+      #                  (set it after the first deploy, when you know it)
+      - key: DATABASE_URL
+        sync: false
+      - key: BASE_URL
+        sync: false

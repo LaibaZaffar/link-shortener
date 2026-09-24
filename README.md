@@ -1,5 +1,7 @@
 # Shortly — a link shortener with click analytics
 
+![tests](https://github.com/LaibaZaffar/link-shortener/actions/workflows/ci.yml/badge.svg)
+
 Paste a long web address, get a short one, and see a dashboard of who clicked it,
 when, and where they came from.
 
@@ -81,6 +83,8 @@ of the database passes through `as_utc()` in `models.py` first.
 ## Deploy it
 
 See [ROADMAP.md](ROADMAP.md) for the full walkthrough. The short version:
-push to GitHub, then on [Render](https://render.com) choose **New → Blueprint**
-and select the repo. `render.yaml` sets up the web service and a PostgreSQL
-database together.
+a free [Neon](https://neon.tech) PostgreSQL database, plus a free web service
+on [Render](https://render.com) created from `render.yaml`.
+
+The free web service sleeps after 15 minutes of no traffic, so the very first
+visit can take up to a minute to wake it up. Everything after that is instant.

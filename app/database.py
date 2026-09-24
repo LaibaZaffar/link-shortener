@@ -23,7 +23,16 @@ _url = _normalise(DATABASE_URL)
 # check_same_thread is a SQLite-only quirk; it lets FastAPI's threads share the file.
 _connect_args = {"check_same_thread": False} if _url.startswith("sqlite") else {}
 
-engine = create_engine(_url, connect_args=_connect_args, pool_pre_ping=True)
+engine = create_engine(
+    _url,
+    connect_args=_connect_args,
+    # Free hosted databases drop idle connections. pool_pre_ping checks a
+    # connection is alive before handing it over, and pool_recycle throws
+    # away any connection older than five minutes, so a sleeping database
+    # waking up never shows the user an error.
+    pool_pre_ping=True,
+    pool_recycle=300,
+)
 
 
 def create_db_and_tables() -> None:

@@ -48,50 +48,68 @@ a junior CV.
 
 This is the phase that matters most. A live URL beats a fourth project.
 
-1. **Put it on GitHub**
+### 1. The database: Neon (free, 5 minutes)
 
-   ```bash
-   git init
-   git add .
-   git commit -m "Link shortener with click analytics"
-   git branch -M main
-   git remote add origin https://github.com/<your-username>/link-shortener.git
-   git push -u origin main
+Render's own free database is deleted after 30 days, which would break your
+demo while you are still applying for jobs. Neon's free tier does not expire;
+it just sleeps when idle and wakes on the next query.
+
+1. Sign up at [neon.tech](https://neon.tech) with your GitHub account
+2. Create a project — any name, any region close to you
+3. Copy the **connection string**. It looks like:
+
+   ```
+   postgresql://user:password@ep-something.region.aws.neon.tech/neondb?sslmode=require
    ```
 
-   Check that `.env` did **not** get committed — `.gitignore` already excludes
-   it, but look anyway. Leaked secrets are a bad first impression.
+Keep it somewhere safe for the next step. It contains a password, so it never
+goes in the repo — that is exactly why `render.yaml` marks it `sync: false`.
 
-2. **Deploy on Render** (free tier, no card needed)
+### 2. The app: Render (free)
 
-   - Sign in to [render.com](https://render.com) with GitHub
-   - **New → Blueprint**, pick your repo; it reads `render.yaml` and creates
-     both the web service and a PostgreSQL database
-   - After the first deploy, copy your live URL (e.g.
-     `https://link-shortener-abcd.onrender.com`) into the `BASE_URL`
-     environment variable, then redeploy
+1. Sign in to [render.com](https://render.com) with GitHub
+2. **New → Blueprint**, pick `link-shortener`; it reads `render.yaml`
+3. When it asks for the variables it cannot guess:
+   - `DATABASE_URL` — paste the Neon connection string
+   - `BASE_URL` — leave blank for now, you do not know the address yet
+4. Deploy, and watch the log. The tables are created automatically on first
+   start, so there is no database setup to do.
 
-   Two things to know about the free tier: the app sleeps after ~15 minutes of
-   no traffic and takes a few seconds to wake up, and free databases are
-   deleted after 30 days, so re-create it if you leave the project alone.
-   Mention the sleep in your README so a recruiter is not confused by a slow
-   first load.
+### 3. Tell the app its own address
 
-3. **Check the deploy is healthy**: visit `/health`, sign up on the live site,
-   create a link, click it, confirm the chart moves.
+After the first deploy Render shows your URL, something like
+`https://link-shortener-abcd.onrender.com`.
 
-4. **Prove CI works**: push a commit that breaks a test on a branch, watch the
-   GitHub Actions run go red, fix it, watch it go green. Then add the badge to
-   your README:
+Go to the service's **Environment** tab, set `BASE_URL` to that address (no
+trailing slash), and save. Render redeploys automatically.
 
-   ```markdown
-   ![tests](https://github.com/<your-username>/link-shortener/actions/workflows/ci.yml/badge.svg)
-   ```
+Skipping this is the single most common mistake here: the app would keep
+displaying your short links as `http://127.0.0.1:8000/abc123`, which works for
+nobody but you.
 
-5. **Add a screenshot** to `docs/screenshot.png`. Most people looking at your
-   repo will never run the code.
+### 4. Check it properly
 
----
+- Visit `/health` — it should answer `{"status": "ok"}`
+- Sign up on the live site, create a link, click it, refresh the stats page
+- Check the chart moved and the short link shows your real domain
+
+### 5. Finish the repo
+
+- Put the live URL at the top of `README.md`, replacing the placeholder
+- Add a screenshot to `docs/screenshot.png` — most people reading your repo
+  will never run the code
+- Prove CI works: push a commit that breaks a test on a branch, watch the
+  GitHub Actions run go red, fix it, watch it go green
+
+### Things that will surprise you
+
+**The first visit is slow.** Free Render services sleep after 15 minutes of no
+traffic and take up to a minute to wake. Say so in your README so nobody thinks
+the app is broken. If it bothers you later, a free cron service pinging
+`/health` every 10 minutes keeps it awake.
+
+**Your local database and the live one are separate.** The account you made on
+your laptop does not exist on the live site. Sign up again there.
 
 ## Phase 3 — The parts that impress (days 8–14, pick one or two)
 

@@ -2,11 +2,23 @@
 
 from datetime import datetime, timezone
 
+from sqlalchemy import Column, DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
 
 def utcnow() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def utc_column(**kwargs) -> Column:
+    """A timestamp column that remembers its timezone.
+
+    PostgreSQL has two date types: "timestamp" throws the timezone away, and
+    "timestamptz" keeps it. Using the second one means a database server set
+    to a different timezone can never silently shift our dates. SQLite has no
+    real date type either way, so this changes nothing locally.
+    """
+    return Column(DateTime(timezone=True), **kwargs)
 
 
 def as_utc(value: datetime) -> datetime:
@@ -23,7 +35,7 @@ class User(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     email: str = Field(index=True, unique=True)
     password_hash: str
-    created_at: datetime = Field(default_factory=utcnow)
+    created_at: datetime = Field(default_factory=utcnow, sa_column=utc_column(nullable=False))
 
     links: list["Link"] = Relationship(back_populates="owner")
 
@@ -36,9 +48,9 @@ class Link(SQLModel, table=True):
     target_url: str
     title: str | None = None
     user_id: int = Field(foreign_key="user.id", index=True)
-    created_at: datetime = Field(default_factory=utcnow)
+    created_at: datetime = Field(default_factory=utcnow, sa_column=utc_column(nullable=False))
     # None means "never expires", which is the default.
-    expires_at: datetime | None = Field(default=None)
+    expires_at: datetime | None = Field(default=None, sa_column=utc_column(nullable=True))
 
     owner: User | None = Relationship(back_populates="links")
     clicks: list["Click"] = Relationship(back_populates="link")
@@ -56,7 +68,9 @@ class Click(SQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     link_id: int = Field(foreign_key="link.id", index=True)
-    clicked_at: datetime = Field(default_factory=utcnow, index=True)
+    clicked_at: datetime = Field(
+        default_factory=utcnow, sa_column=utc_column(index=True, nullable=False)
+    )
     referrer: str | None = None
     user_agent: str | None = None
 
