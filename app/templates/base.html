@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Link Shortener{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">🔗 Shortly</a>
+    {% if user %}
+      <nav>
+        <span class="muted">{{ user.email }}</span>
+        <form method="post" action="/logout">
+          <button class="btn-ghost" type="submit">Log out</button>
+        </form>
+      </nav>
+    {% endif %}
+  </header>
+
+  <main>
+    {% if flash %}
+      <p class="banner {{ flash.kind }}">{{ flash.message }}</p>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="muted">Built with FastAPI · <a href="/docs">API docs</a></footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

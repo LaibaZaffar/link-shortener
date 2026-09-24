@@ -1,0 +1,21 @@
+# Web framework + server
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+
+# Database (SQLModel = SQLAlchemy + Pydantic, friendlier for beginners)
+sqlmodel>=0.0.22
+
+# HTML templates + form parsing + signed login cookies
+jinja2>=3.1.4
+python-multipart>=0.0.9
+itsdangerous>=2.2.0
+
+# PostgreSQL driver (only used in production; harmless locally)
+psycopg[binary]>=3.2.0
+
+# QR code images for each short link
+qrcode[pil]>=7.4.2
+
+# Testing
+pytest>=8.3.0
+httpx>=0.27.0

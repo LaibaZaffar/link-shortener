@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Your links{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Shorten a link</h1>
+  <form method="post" action="/links" class="create-form">
+    <label>Destination
+      <input type="text" name="target_url" placeholder="https://example.com/a/very/long/page" required autofocus>
+    </label>
+    <div class="row">
+      <label>Label <span class="muted">(private note, just for you)</span>
+        <input type="text" name="title" placeholder="HEC scholarship form">
+      </label>
+      <label>Custom code <span class="muted">(the public part after the slash)</span>
+        <input type="text" name="custom_code" placeholder="my-resume">
+      </label>
+      <label>Expires
+        <select name="expires_in">
+          <option value="">Never</option>
+          <option value="1">In 1 day</option>
+          <option value="7">In 7 days</option>
+          <option value="30">In 30 days</option>
+          <option value="90">In 90 days</option>
+        </select>
+      </label>
+    </div>
+    <button class="btn" type="submit">Create short link</button>
+  </form>
+</div>
+
+<div class="card">
+  <div class="toolbar">
+    <h2>Your links <span class="muted">({{ rows|length }})</span></h2>
+    <form method="get" action="/" class="toolbar-form">
+      <input type="search" name="q" value="{{ q }}" placeholder="Search links…" aria-label="Search links">
+      <select name="sort" aria-label="Sort links" onchange="this.form.submit()">
+        <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest first</option>
+        <option value="oldest" {% if sort == 'oldest' %}selected{% endif %}>Oldest first</option>
+        <option value="clicks" {% if sort == 'clicks' %}selected{% endif %}>Most clicked</option>
+      </select>
+      <button class="btn-ghost" type="submit">Apply</button>
+      {% if q %}<a class="btn-ghost" href="/?sort={{ sort }}">Clear</a>{% endif %}
+    </form>
+  </div>
+
+  {% if not rows %}
+    {% if has_any_links %}
+      <p class="empty">No links match <strong>{{ q }}</strong>. <a href="/?sort={{ sort }}">Show all links</a>.</p>
+    {% else %}
+      <div class="empty">
+        <p class="empty-title">No links yet</p>
+        <p class="muted">Paste any long web address in the box above to get your first short link.
+        Every visit to it gets recorded, so you can see who actually clicked.</p>
+      </div>
+    {% endif %}
+  {% else %}
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>Short link</th><th>Destination</th><th class="num">Clicks</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for link, clicks in rows %}
+        <tr>
+          <td>
+            <a class="code" href="/{{ link.code }}" target="_blank" rel="noopener">{{ base_url }}/{{ link.code }}</a>
+            {% if link.title %}<div class="muted">{{ link.title }}</div>{% endif %}
+            {% if link.is_expired %}
+              <span class="badge expired">Expired</span>
+            {% elif link.expires_at %}
+              <span class="badge">Expires {{ link.expires_at.strftime('%d %b %Y') }}</span>
+            {% endif %}
+          </td>
+          <td class="truncate" title="{{ link.target_url }}">{{ link.target_url }}</td>
+          <td class="num">{{ clicks }}</td>
+          <td class="actions">
+            <button class="btn-ghost js-copy" type="button"
+                    data-url="{{ base_url }}/{{ link.code }}">Copy</button>
+            <a class="btn-ghost" href="/links/{{ link.id }}/stats">Stats</a>
+            <a class="btn-ghost" href="/links/{{ link.id }}/edit">Edit</a>
+            <form method="post" action="/links/{{ link.id }}/delete"
+                  onsubmit="return confirm('Delete this link and its click history?')">
+              <button class="btn-ghost danger" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Copy the short link to the clipboard, then say so on the button itself.
+  document.querySelectorAll(".js-copy").forEach(function (button) {
+    button.addEventListener("click", async function () {
+      try {
+        await navigator.clipboard.writeText(button.dataset.url);
+        const original = button.textContent;
+        button.textContent = "Copied!";
+        button.classList.add("copied");
+        setTimeout(function () {
+          button.textContent = original;
+          button.classList.remove("copied");
+        }, 1500);
+      } catch (error) {
+        // Browsers block the clipboard on insecure pages, so fall back to
+        // showing the link for the user to copy by hand.
+        window.prompt("Copy this link:", button.dataset.url);
+      }
+    });
+  });
+</script>
+{% endblock %}

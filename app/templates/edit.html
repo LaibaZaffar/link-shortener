@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ link.code }}{% endblock %}
+{% block content %}
+<div class="card">
+  <a class="muted" href="/">&larr; Back to links</a>
+  <h1>Edit link</h1>
+  <p class="muted">
+    The short code stays the same, so anywhere you have already shared
+    <span class="code">{{ base_url }}/{{ link.code }}</span> keeps working.
+  </p>
+
+  {% if error %}<p class="banner error">{{ error }}</p>{% endif %}
+
+  <form method="post" action="/links/{{ link.id }}/edit">
+    <label>Destination
+      <input type="text" name="target_url" value="{{ link.target_url }}" required autofocus>
+    </label>
+    <label>Label <span class="muted">(private note, just for you)</span>
+      <input type="text" name="title" value="{{ link.title or '' }}">
+    </label>
+    <label>Expiry
+      <select name="expires_in">
+        <option value="keep" selected>
+          {% if link.expires_at %}Keep expiring {{ link.expires_at.strftime('%d %b %Y') }}{% else %}Keep: never expires{% endif %}
+        </option>
+        <option value="">Never expire</option>
+        <option value="1">In 1 day</option>
+        <option value="7">In 7 days</option>
+        <option value="30">In 30 days</option>
+        <option value="90">In 90 days</option>
+      </select>
+    </label>
+    <button class="btn" type="submit">Save changes</button>
+    <a class="btn-ghost" href="/">Cancel</a>
+  </form>
+</div>
+{% endblock %}

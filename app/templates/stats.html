@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Stats · {{ link.code }}{% endblock %}
+{% block content %}
+<div class="card">
+  <a class="muted" href="/">&larr; Back to links</a>
+  <h1>{{ link.title or link.code }}</h1>
+  <p>
+    <a class="code" href="/{{ link.code }}" target="_blank" rel="noopener">{{ base_url }}/{{ link.code }}</a>
+    <span class="muted">&rarr; {{ link.target_url }}</span>
+  </p>
+  <div class="stat"><span class="stat-num">{{ total }}</span> total clicks</div>
+
+  {% if link.is_expired %}
+    <p class="banner error">This link has expired and no longer redirects.</p>
+  {% elif link.expires_at %}
+    <p class="muted">Expires {{ link.expires_at.strftime('%d %b %Y') }}.</p>
+  {% endif %}
+
+  <div class="qr">
+    <img src="/links/{{ link.id }}/qr.png" alt="QR code for {{ link.code }}" width="150" height="150">
+    <div>
+      <strong>Scan or print this</strong>
+      <p class="muted">
+        Point a phone camera at it to open the link. Useful on posters, slides
+        or a business card. Right-click the image to save the PNG.
+      </p>
+      <a class="btn-ghost" href="/links/{{ link.id }}/edit">Edit this link</a>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Clicks per day <span class="muted">(last 30 days)</span></h2>
+  <div class="chart-box"><canvas id="timeline"></canvas></div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h2>Top referrers</h2>
+    <div class="chart-box tall"><canvas id="referrers"></canvas></div>
+  </div>
+  <div class="card">
+    <h2>Browsers</h2>
+    <div class="chart-box tall"><canvas id="browsers"></canvas></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  // Fetch the numbers from our own JSON endpoint, then draw three charts.
+  async function drawCharts() {
+    const response = await fetch("/api/links/{{ link.id }}/stats");
+    if (!response.ok) return;
+    const data = await response.json();
+
+    const ink = getComputedStyle(document.body).getPropertyValue("--ink").trim();
+    Chart.defaults.color = ink;
+    Chart.defaults.font.family = "system-ui, sans-serif";
+
+    new Chart(document.getElementById("timeline"), {
+      type: "line",
+      data: {
+        labels: data.timeline.labels,
+        datasets: [{
+          label: "Clicks",
+          data: data.timeline.values,
+          borderColor: "#4f46e5",
+          backgroundColor: "rgba(79, 70, 229, 0.12)",
+          fill: true,
+          tension: 0.3,
+          pointRadius: 2,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+      },
+    });
+
+    new Chart(document.getElementById("referrers"), {
+      type: "bar",
+      data: {
+        labels: data.referrers.labels,
+        datasets: [{ data: data.referrers.values, backgroundColor: "#4f46e5" }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: "y",
+        plugins: { legend: { display: false } },
+        scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+      },
+    });
+
+    new Chart(document.getElementById("browsers"), {
+      type: "doughnut",
+      data: {
+        labels: data.browsers.labels,
+        datasets: [{
+          data: data.browsers.values,
+          backgroundColor: ["#4f46e5", "#0ea5e9", "#22c55e", "#f59e0b", "#ef4444", "#a855f7"],
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: "bottom" } },
+      },
+    });
+  }
+  drawCharts();
+</script>
+{% endblock %}
