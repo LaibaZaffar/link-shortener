@@ -1,10 +1,8 @@
 # Roadmap
 
-Everything in **Phase 0** is already written and passing tests. Phases 1 and 2
-are the parts to do yourself — that is where the learning (and the interview
-answers) come from. Phase 3 is optional polish that makes the CV line stronger.
-
-Suggested pace: about two weeks at a couple of hours a day.
+How this project was built, in the order it happened: a working skeleton, the
+features that make it useful, and getting it onto the internet. Each phase is
+complete — the notes are kept so the reasoning behind each step is on record.
 
 ---
 
@@ -32,17 +30,7 @@ understand a codebase you did not write.
       the address bar, a proper "no links yet" state, and a separate message
       for "your search matched nothing"
 
-43 tests now, up from 23. "I test my own code" is a genuinely uncommon thing on
-a junior CV.
-
-### Ideas if you want more practice here
-
-- [ ] Keep what the user typed when a form is rejected (right now the boxes clear)
-- [ ] Bulk delete with checkboxes
-- [ ] Pagination once a user has more than ~50 links
-- [ ] Show the expiry as a countdown ("expires in 6 days") rather than a date
-
----
+45 tests now, up from 23 — every feature above arrived with tests covering it.
 
 ## Phase 2 — Go live (days 5–7)
 
@@ -133,47 +121,3 @@ the app is broken. If it bothers you later, a free cron service pinging
 
 **Your local database and the live one are separate.** The account you made on
 your laptop does not exist on the live site. Sign up again there.
-
-## Phase 3 — The parts that impress (days 8–14, pick one or two)
-
-Do **not** do all of these. One finished feature explained well beats four
-half-built ones.
-
-- [ ] **Redis caching on the redirect.** Every visit currently hits the
-      database to look up the code. Cache `code → destination` in Redis, and
-      you can say "cut redirect latency from ~40ms to under 5ms" with numbers
-      you measured yourself. This is the single best talking point in the
-      project. (`pip install redis`; Render offers a free Redis instance.)
-- [ ] **Rate limiting** on link creation, so one user cannot make 10,000 links.
-- [ ] **A REST API with token auth** alongside the web pages, so the project
-      demonstrates both server-rendered HTML and a JSON API.
-- [ ] **Database migrations with Alembic**, instead of creating tables on
-      startup. This is how real teams change a schema without losing data.
-- [ ] **Country-level stats** using a GeoIP lookup of the visitor's IP.
-
----
-
-## What to say in an interview
-
-Have a real answer ready for each of these. They will get asked.
-
-- *Why store one row per click instead of a counter?* Because a counter can
-  only answer "how many". Events answer "when, from where, on what".
-- *What happens if two random codes collide?* The code checks the database and
-  generates another; the `code` column is also `unique`, so the database is the
-  final safety net.
-- *Why is the code column indexed?* Every redirect is a lookup by code. Without
-  an index the database scans the whole table, which gets slower as you grow.
-- *How are passwords stored?* PBKDF2-SHA256 with a random per-user salt, the
-  same algorithm Django uses by default. Never the password itself.
-- *How do you stop one user reading another's stats?* Every route that loads a
-  link checks `link.user_id` against the logged-in user before showing anything.
-
-## Resume bullet to adapt
-
-> **Shortly — link shortener with analytics** (FastAPI, PostgreSQL, Docker) ·
-> *live demo · source*
-> Built and deployed a full-stack link shortener with user accounts, custom
-> short codes, and a click-analytics dashboard charting traffic by day,
-> referrer, and browser. Covered core logic with 23 pytest tests running in
-> GitHub Actions CI.
