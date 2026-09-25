@@ -5,7 +5,7 @@
 Paste a long web address, get a short one, and see a dashboard of who clicked it,
 when, and where they came from.
 
-**Live demo:** _add your URL here after deploying_
+**Live demo:** https://link-shortener-43dv.vercel.app  
 **Built with:** Python · FastAPI · SQLModel · PostgreSQL · Jinja2 · Chart.js · Docker
 
 <!-- Add a screenshot once you have deployed:  ![screenshot](docs/screenshot.png) -->
@@ -86,5 +86,6 @@ See [ROADMAP.md](ROADMAP.md) for the full walkthrough. The short version:
 a free [Neon](https://neon.tech) PostgreSQL database, plus a free web service
 on [Render](https://render.com) created from `render.yaml`.
 
-The free web service sleeps after 15 minutes of no traffic, so the very first
-visit can take up to a minute to wake it up. Everything after that is instant.
+The live demo runs on Vercel's free tier with a Neon PostgreSQL database.
+Requests are served by serverless functions, so the first request after a
+quiet period takes about a second to warm up.
