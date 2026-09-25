@@ -10,9 +10,13 @@ from app.config import DATABASE_URL
 
 
 def _normalise(url: str) -> str:
-    """Render/Heroku hand out 'postgres://' URLs but SQLAlchemy wants
-    'postgresql+psycopg://'. Fixing it here means the app runs unchanged
-    on your laptop (SQLite) and in production (PostgreSQL)."""
+    """Names the driver SQLAlchemy should use to reach the database.
+
+    Neon hands out 'postgresql://' URLs, and some hosts still use the older
+    'postgres://' spelling. SQLAlchemy needs to be told which driver speaks
+    to the server, hence 'postgresql+psycopg://'. Doing the rewrite here is
+    why the same code runs on SQLite locally and PostgreSQL in production.
+    """
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
     if url.startswith("postgresql://"):
