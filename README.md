@@ -6,7 +6,7 @@ Paste a long web address, get a short one, and see a dashboard of who clicked it
 when, and where they came from.
 
 **Live demo:** https://link-shortener-43dv.vercel.app  
-**Built with:** Python · FastAPI · SQLModel · PostgreSQL · Jinja2 · Chart.js · Docker
+**Built with:** Python · FastAPI · SQLModel · PostgreSQL · Jinja2 · Chart.js · pytest
 
 <!-- Add a screenshot once you have deployed:  ![screenshot](docs/screenshot.png) -->
 
@@ -82,10 +82,20 @@ of the database passes through `as_utc()` in `models.py` first.
 
 ## Deploy it
 
-See [ROADMAP.md](ROADMAP.md) for the full walkthrough. The short version:
-a free [Neon](https://neon.tech) PostgreSQL database, plus a free web service
-on [Render](https://render.com) created from `render.yaml`.
+The live demo runs on [Vercel](https://vercel.com)'s free tier with a free
+[Neon](https://neon.tech) PostgreSQL database.
 
-The live demo runs on Vercel's free tier with a Neon PostgreSQL database.
-Requests are served by serverless functions, so the first request after a
-quiet period takes about a second to warm up.
+There is no deployment config to maintain: Vercel finds the FastAPI app in
+`app/main.py` on its own. Only three environment variables are needed —
+`DATABASE_URL`, `SECRET_KEY` and `BASE_URL`. Create the tables on a fresh
+database with:
+
+```bash
+DATABASE_URL="postgresql://..." python -m app.init_db
+```
+
+Requests are served by serverless functions, so the first one after a quiet
+period takes about a second to warm up. A `Dockerfile` is included too, if you
+would rather run it as a container.
+
+See [ROADMAP.md](ROADMAP.md) for the full walkthrough.

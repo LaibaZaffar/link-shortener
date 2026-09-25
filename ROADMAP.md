@@ -38,9 +38,9 @@ This is the phase that matters most. A live URL beats a fourth project.
 
 ### 1. The database: Neon (free, 5 minutes)
 
-Render's own free database is deleted after 30 days, which would break your
-demo while you are still applying for jobs. Neon's free tier does not expire;
-it just sleeps when idle and wakes on the next query.
+Neon's free tier does not expire — it sleeps when idle and wakes on the next
+query. Render's own free database, by contrast, is deleted after 30 days, which
+would quietly break the live demo.
 
 1. Sign up at [neon.tech](https://neon.tech) with your GitHub account
 2. Create a project — any name, any region close to you
@@ -51,48 +51,45 @@ it just sleeps when idle and wakes on the next query.
    ```
 
 Keep it somewhere safe for the next step. It contains a password, so it never
-goes in the repo — that is exactly why `render.yaml` marks it `sync: false`.
+goes in the repo. It is set as an environment variable on the host instead.
 
-### 2. The app: Render, or Vercel if Render wants a card
+### 2. The app: Vercel (free)
 
-Render asks for a card to verify free accounts, and locally issued cards are
-often declined. Two ways around it:
+Render was the first choice, but its free tier requires card verification and
+the card was declined — a common problem with cards that block international
+transactions by default. Vercel's Hobby plan needs no card, so that is where
+this ended up.
 
-- Enable international/online transactions on the card in your bank's app,
-  then retry Render, **or**
-- Deploy to Vercel's Hobby plan instead, which needs no card. No config file
-  is needed: Vercel looks for a FastAPI instance named `app` in `app/main.py`
-  and routes every path to it automatically. Adding a catch-all rewrite in
-  `vercel.json` actually *breaks* this, because the app then receives the
-  rewritten path instead of the real one and matches no route.
+1. Sign in to [vercel.com](https://vercel.com) with GitHub
+2. Import the repository. No config file is needed: Vercel looks for a FastAPI
+   instance named `app` at conventional entrypoints, and `app/main.py` is one
+   of them
+3. Add three environment variables:
+   - `DATABASE_URL` — the Neon connection string
+   - `SECRET_KEY` — generate one with
+     `python -c "import secrets; print(secrets.token_hex(32))"`
+   - `BASE_URL` — leave empty until the first deploy finishes
+4. Create the tables before the first visit:
 
-  Import the repo at [vercel.com/new](https://vercel.com/new), add the
-  environment variables, and create the tables first with:
+   ```bash
+   DATABASE_URL="<your neon string>" python -m app.init_db
+   ```
 
-  ```bash
-  DATABASE_URL="<your neon string>" python -m app.init_db
-  ```
+Do **not** add a catch-all rewrite in `vercel.json` pointing at an entrypoint.
+Vercel now passes the rewritten path to the app, so FastAPI receives
+`/api/index` for every request, matches no route and returns 404 on everything.
+The fix was deleting that config, not adding to it.
 
-  Vercel runs the app as serverless functions, so it never sleeps the way
-  Render's free tier does, but each request pays a small cold-start cost.
-
-#### Render (free)
-
-1. Sign in to [render.com](https://render.com) with GitHub
-2. **New → Blueprint**, pick `link-shortener`; it reads `render.yaml`
-3. When it asks for the variables it cannot guess:
-   - `DATABASE_URL` — paste the Neon connection string
-   - `BASE_URL` — leave blank for now, you do not know the address yet
-4. Deploy, and watch the log. The tables are created automatically on first
-   start, so there is no database setup to do.
+The repo also keeps a `render.yaml` and a `Dockerfile`, so the app can be
+deployed to Render or run as a container without changes.
 
 ### 3. Tell the app its own address
 
-After the first deploy Render shows your URL, something like
-`https://link-shortener-abcd.onrender.com`.
+After the first deploy Vercel shows the URL, something like
+`https://link-shortener-43dv.vercel.app`.
 
-Go to the service's **Environment** tab, set `BASE_URL` to that address (no
-trailing slash), and save. Render redeploys automatically.
+Go to Settings → Environment Variables, set `BASE_URL` to that address (no
+trailing slash), and redeploy so the new value takes effect.
 
 Skipping this is the single most common mistake here: the app would keep
 displaying your short links as `http://127.0.0.1:8000/abc123`, which works for
@@ -114,10 +111,9 @@ nobody but you.
 
 ### Things that will surprise you
 
-**The first visit is slow.** Free Render services sleep after 15 minutes of no
-traffic and take up to a minute to wake. Say so in your README so nobody thinks
-the app is broken. If it bothers you later, a free cron service pinging
-`/health` every 10 minutes keeps it awake.
+**The first visit is slow.** Serverless functions start on demand, so the first
+request after a quiet period spends about a second waking up. Everything after
+that is fast. Say so in the README, so nobody assumes the app is broken.
 
 **Your local database and the live one are separate.** The account you made on
 your laptop does not exist on the live site. Sign up again there.
