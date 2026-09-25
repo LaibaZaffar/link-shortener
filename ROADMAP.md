@@ -72,10 +72,14 @@ often declined. Two ways around it:
 
 - Enable international/online transactions on the card in your bank's app,
   then retry Render, **or**
-- Deploy to Vercel's Hobby plan instead, which needs no card. The repo has a
-  `vercel.json` and an `api/index.py` for exactly this. Import the repo at
-  [vercel.com/new](https://vercel.com/new), add the same environment
-  variables, and create the tables first with:
+- Deploy to Vercel's Hobby plan instead, which needs no card. No config file
+  is needed: Vercel looks for a FastAPI instance named `app` in `app/main.py`
+  and routes every path to it automatically. Adding a catch-all rewrite in
+  `vercel.json` actually *breaks* this, because the app then receives the
+  rewritten path instead of the real one and matches no route.
+
+  Import the repo at [vercel.com/new](https://vercel.com/new), add the
+  environment variables, and create the tables first with:
 
   ```bash
   DATABASE_URL="<your neon string>" python -m app.init_db
