@@ -1,7 +1,9 @@
 """Creates the database connection and hands out sessions to the routes."""
 
+import os
 from collections.abc import Iterator
 
+from sqlalchemy.pool import NullPool
 from sqlmodel import Session, SQLModel, create_engine
 
 from app.config import DATABASE_URL
@@ -23,15 +25,19 @@ _url = _normalise(DATABASE_URL)
 # check_same_thread is a SQLite-only quirk; it lets FastAPI's threads share the file.
 _connect_args = {"check_same_thread": False} if _url.startswith("sqlite") else {}
 
+# On a serverless host every request may run in a fresh short-lived process,
+# so keeping a pool of open connections wastes the database's connection
+# limit. NullPool opens one connection per request and closes it after.
+_pool_args = {"poolclass": NullPool} if os.getenv("VERCEL") else {"pool_recycle": 300}
+
 engine = create_engine(
     _url,
     connect_args=_connect_args,
-    # Free hosted databases drop idle connections. pool_pre_ping checks a
-    # connection is alive before handing it over, and pool_recycle throws
-    # away any connection older than five minutes, so a sleeping database
+    **_pool_args,
+    # Free hosted databases drop idle connections. pool_pre_ping checks that
+    # a connection is alive before handing it over, so a sleeping database
     # waking up never shows the user an error.
     pool_pre_ping=True,
-    pool_recycle=300,
 )
 
 

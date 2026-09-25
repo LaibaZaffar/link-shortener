@@ -65,7 +65,26 @@ it just sleeps when idle and wakes on the next query.
 Keep it somewhere safe for the next step. It contains a password, so it never
 goes in the repo — that is exactly why `render.yaml` marks it `sync: false`.
 
-### 2. The app: Render (free)
+### 2. The app: Render, or Vercel if Render wants a card
+
+Render asks for a card to verify free accounts, and locally issued cards are
+often declined. Two ways around it:
+
+- Enable international/online transactions on the card in your bank's app,
+  then retry Render, **or**
+- Deploy to Vercel's Hobby plan instead, which needs no card. The repo has a
+  `vercel.json` and an `api/index.py` for exactly this. Import the repo at
+  [vercel.com/new](https://vercel.com/new), add the same environment
+  variables, and create the tables first with:
+
+  ```bash
+  DATABASE_URL="<your neon string>" python -m app.init_db
+  ```
+
+  Vercel runs the app as serverless functions, so it never sleeps the way
+  Render's free tier does, but each request pays a small cold-start cost.
+
+#### Render (free)
 
 1. Sign in to [render.com](https://render.com) with GitHub
 2. **New → Blueprint**, pick `link-shortener`; it reads `render.yaml`
