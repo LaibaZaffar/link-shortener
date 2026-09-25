@@ -4,15 +4,15 @@
 <div class="card narrow">
   <h1>Create an account</h1>
   {% if error %}<p class="error">{{ error }}</p>{% endif %}
-  <form method="post" action="/signup">
+  <form method="post" action="/signup" class="stacked">
     <label>Email
       <input type="email" name="email" value="{{ email or '' }}" required autofocus>
     </label>
-    <label>Password <span class="muted">(8+ characters)</span>
+    <label>Password <span class="muted">8+ characters</span>
       <input type="password" name="password" minlength="8" required>
     </label>
     <button class="btn" type="submit">Sign up</button>
   </form>
-  <p class="muted">Already registered? <a href="/login">Log in</a>.</p>
+  <p class="muted" style="margin-top:1rem">Already registered? <a href="/login">Log in</a>.</p>
 </div>
 {% endblock %}

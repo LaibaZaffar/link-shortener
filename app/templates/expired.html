@@ -2,12 +2,13 @@
 {% block title %}Link expired{% endblock %}
 {% block content %}
 <div class="card narrow center">
-  <h1>This link has expired</h1>
+  <div class="empty-mark">⏳</div>
+  <h1 style="margin-top:0.6rem">This link has expired</h1>
   <p class="muted">
     <span class="code">/{{ link.code }}</span> was set to stop working on
     {{ link.expires_at.strftime('%d %b %Y') }}.
   </p>
   <p class="muted">If it is yours, you can give it a new expiry date from your dashboard.</p>
-  <a class="btn" href="/">Go to dashboard</a>
+  <p style="margin-top:1.4rem"><a class="btn" href="/">Go to dashboard</a></p>
 </div>
 {% endblock %}

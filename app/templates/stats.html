@@ -2,23 +2,33 @@
 {% block title %}Stats · {{ link.code }}{% endblock %}
 {% block content %}
 <div class="card">
-  <a class="muted" href="/">&larr; Back to links</a>
+  <a class="back" href="/">&larr; Back to links</a>
   <h1>{{ link.title or link.code }}</h1>
-  <p>
-    <a class="code" href="/{{ link.code }}" target="_blank" rel="noopener">{{ base_url }}/{{ link.code }}</a>
-    <span class="muted">&rarr; {{ link.target_url }}</span>
-  </p>
-  <div class="stat"><span class="stat-num">{{ total }}</span> total clicks</div>
+  <a class="code" href="/{{ link.code }}" target="_blank" rel="noopener">{{ base_url }}/{{ link.code }}</a>
+  <span class="destination">&rarr; {{ link.target_url }}</span>
 
   {% if link.is_expired %}
-    <p class="banner error">This link has expired and no longer redirects.</p>
-  {% elif link.expires_at %}
-    <p class="muted">Expires {{ link.expires_at.strftime('%d %b %Y') }}.</p>
+    <p class="banner error" style="margin-top:1rem">This link has expired and no longer redirects.</p>
   {% endif %}
 
+  <div class="stat-grid">
+    <div class="stat">
+      <span class="stat-num">{{ total }}</span>
+      <span class="stat-label">Total clicks</span>
+    </div>
+    <div class="stat plain">
+      <span class="stat-num">{{ link.created_at.strftime('%d %b %Y') }}</span>
+      <span class="stat-label">Created</span>
+    </div>
+    <div class="stat plain">
+      <span class="stat-num">{% if link.expires_at %}{{ link.expires_at.strftime('%d %b %Y') }}{% else %}Never{% endif %}</span>
+      <span class="stat-label">Expires</span>
+    </div>
+  </div>
+
   <div class="qr">
-    <img src="/links/{{ link.id }}/qr.png" alt="QR code for {{ link.code }}" width="150" height="150">
-    <div>
+    <img src="/links/{{ link.id }}/qr.png" alt="QR code for {{ link.code }}" width="132" height="132">
+    <div class="qr-text">
       <strong>Scan or print this</strong>
       <p class="muted">
         Point a phone camera at it to open the link. Useful on posters, slides
@@ -30,7 +40,7 @@
 </div>
 
 <div class="card">
-  <h2>Clicks per day <span class="muted">(last 30 days)</span></h2>
+  <h2>Clicks per day <span class="muted">last 30 days</span></h2>
   <div class="chart-box"><canvas id="timeline"></canvas></div>
 </div>
 
@@ -55,9 +65,23 @@
     if (!response.ok) return;
     const data = await response.json();
 
-    const ink = getComputedStyle(document.body).getPropertyValue("--ink").trim();
-    Chart.defaults.color = ink;
-    Chart.defaults.font.family = "system-ui, sans-serif";
+    const styles = getComputedStyle(document.body);
+    const accent = styles.getPropertyValue("--accent").trim();
+    const textColour = styles.getPropertyValue("--muted").trim();
+    const gridColour = "rgba(255, 255, 255, 0.06)";
+
+    Chart.defaults.color = textColour;
+    Chart.defaults.font.family = "'Plus Jakarta Sans', system-ui, sans-serif";
+    Chart.defaults.font.size = 11;
+
+    // One shared set, so a browser keeps the same colour across charts.
+    const palette = [accent, "#5ddba4", "#7aa2ff", "#d98fe0", "#ff6b6b", "#69d6e8"];
+
+    const axis = {
+      grid: { color: gridColour, drawTicks: false },
+      border: { display: false },
+      ticks: { padding: 8 },
+    };
 
     new Chart(document.getElementById("timeline"), {
       type: "line",
@@ -66,18 +90,25 @@
         datasets: [{
           label: "Clicks",
           data: data.timeline.values,
-          borderColor: "#4f46e5",
-          backgroundColor: "rgba(79, 70, 229, 0.12)",
+          borderColor: accent,
+          backgroundColor: "rgba(255, 180, 84, 0.10)",
+          borderWidth: 2,
           fill: true,
-          tension: 0.3,
-          pointRadius: 2,
+          tension: 0.35,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointBackgroundColor: accent,
         }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
         plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+        scales: {
+          x: { ...axis, grid: { display: false } },
+          y: { ...axis, beginAtZero: true, ticks: { precision: 0, padding: 8 } },
+        },
       },
     });
 
@@ -85,14 +116,22 @@
       type: "bar",
       data: {
         labels: data.referrers.labels,
-        datasets: [{ data: data.referrers.values, backgroundColor: "#4f46e5" }],
+        datasets: [{
+          data: data.referrers.values,
+          backgroundColor: accent,
+          borderRadius: 5,
+          barThickness: 18,
+        }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         indexAxis: "y",
         plugins: { legend: { display: false } },
-        scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+        scales: {
+          x: { ...axis, beginAtZero: true, ticks: { precision: 0, padding: 8 } },
+          y: { ...axis, grid: { display: false } },
+        },
       },
     });
 
@@ -102,13 +141,18 @@
         labels: data.browsers.labels,
         datasets: [{
           data: data.browsers.values,
-          backgroundColor: ["#4f46e5", "#0ea5e9", "#22c55e", "#f59e0b", "#ef4444", "#a855f7"],
+          backgroundColor: palette,
+          borderColor: styles.getPropertyValue("--surface").trim(),
+          borderWidth: 3,
         }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: "bottom" } },
+        cutout: "62%",
+        plugins: {
+          legend: { position: "bottom", labels: { boxWidth: 10, boxHeight: 10, padding: 14, usePointStyle: true, pointStyle: "circle" } },
+        },
       },
     });
   }

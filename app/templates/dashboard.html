@@ -8,10 +8,10 @@
       <input type="text" name="target_url" placeholder="https://example.com/a/very/long/page" required autofocus>
     </label>
     <div class="row">
-      <label>Label <span class="muted">(private note, just for you)</span>
+      <label>Label <span class="muted">private note</span>
         <input type="text" name="title" placeholder="HEC scholarship form">
       </label>
-      <label>Custom code <span class="muted">(the public part after the slash)</span>
+      <label>Custom code <span class="muted">public</span>
         <input type="text" name="custom_code" placeholder="my-resume">
       </label>
       <label>Expires
@@ -30,7 +30,7 @@
 
 <div class="card">
   <div class="toolbar">
-    <h2>Your links <span class="muted">({{ rows|length }})</span></h2>
+    <h2>Your links <span class="count">{{ rows|length }}</span></h2>
     <form method="get" action="/" class="toolbar-form">
       <input type="search" name="q" value="{{ q }}" placeholder="Search links…" aria-label="Search links">
       <select name="sort" aria-label="Sort links" onchange="this.form.submit()">
@@ -48,8 +48,9 @@
       <p class="empty">No links match <strong>{{ q }}</strong>. <a href="/?sort={{ sort }}">Show all links</a>.</p>
     {% else %}
       <div class="empty">
+        <div class="empty-mark">🔗</div>
         <p class="empty-title">No links yet</p>
-        <p class="muted">Paste any long web address in the box above to get your first short link.
+        <p class="muted">Paste any long web address above to get your first short link.
         Every visit to it gets recorded, so you can see who actually clicked.</p>
       </div>
     {% endif %}
@@ -64,7 +65,7 @@
         <tr>
           <td>
             <a class="code" href="/{{ link.code }}" target="_blank" rel="noopener">{{ base_url }}/{{ link.code }}</a>
-            {% if link.title %}<div class="muted">{{ link.title }}</div>{% endif %}
+            {% if link.title %}<div class="link-label">{{ link.title }}</div>{% endif %}
             {% if link.is_expired %}
               <span class="badge expired">Expired</span>
             {% elif link.expires_at %}
@@ -100,7 +101,7 @@
       try {
         await navigator.clipboard.writeText(button.dataset.url);
         const original = button.textContent;
-        button.textContent = "Copied!";
+        button.textContent = "Copied";
         button.classList.add("copied");
         setTimeout(function () {
           button.textContent = original;

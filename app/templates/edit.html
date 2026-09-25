@@ -2,20 +2,20 @@
 {% block title %}Edit {{ link.code }}{% endblock %}
 {% block content %}
 <div class="card">
-  <a class="muted" href="/">&larr; Back to links</a>
+  <a class="back" href="/">&larr; Back to links</a>
   <h1>Edit link</h1>
-  <p class="muted">
+  <p class="muted" style="margin-top:-0.8rem">
     The short code stays the same, so anywhere you have already shared
     <span class="code">{{ base_url }}/{{ link.code }}</span> keeps working.
   </p>
 
-  {% if error %}<p class="banner error">{{ error }}</p>{% endif %}
+  {% if error %}<p class="error" style="margin-top:1rem">{{ error }}</p>{% endif %}
 
-  <form method="post" action="/links/{{ link.id }}/edit">
+  <form method="post" action="/links/{{ link.id }}/edit" class="stacked" style="margin-top:1.4rem">
     <label>Destination
       <input type="text" name="target_url" value="{{ link.target_url }}" required autofocus>
     </label>
-    <label>Label <span class="muted">(private note, just for you)</span>
+    <label>Label <span class="muted">private note</span>
       <input type="text" name="title" value="{{ link.title or '' }}">
     </label>
     <label>Expiry

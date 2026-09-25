@@ -2,8 +2,9 @@
 {% block title %}Link not found{% endblock %}
 {% block content %}
 <div class="card narrow center">
-  <h1>Link not found</h1>
+  <div class="empty-mark">🔍</div>
+  <h1 style="margin-top:0.6rem">Link not found</h1>
   <p class="muted">No short link exists for <span class="code">/{{ code }}</span>.</p>
-  <a class="btn" href="/">Go to dashboard</a>
+  <p style="margin-top:1.4rem"><a class="btn" href="/">Go to dashboard</a></p>
 </div>
 {% endblock %}

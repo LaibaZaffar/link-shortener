@@ -3,15 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Link Shortener{% endblock %}</title>
+  <meta name="color-scheme" content="dark">
+  <title>{% block title %}Shortly{% endblock %} · Shortly</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><text y='52' font-size='52'>🔗</text></svg>">
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="/">🔗 Shortly</a>
+    <a class="brand" href="/"><span class="brand-mark">⌘</span> Shortly</a>
     {% if user %}
       <nav>
-        <span class="muted">{{ user.email }}</span>
+        <span class="who">{{ user.email }}</span>
         <form method="post" action="/logout">
           <button class="btn-ghost" type="submit">Log out</button>
         </form>
@@ -26,7 +31,7 @@
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="muted">Built with FastAPI · <a href="/docs">API docs</a></footer>
+  <footer>Built with FastAPI · <a href="/docs">API docs</a></footer>
   {% block scripts %}{% endblock %}
 </body>
 </html>
