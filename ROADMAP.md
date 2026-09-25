@@ -9,7 +9,7 @@ complete — the notes are kept so the reasoning behind each step is on record.
 ## Phase 0 — Working skeleton ✅ done
 
 Signup and login, create a link, redirect, record clicks, three charts, 23
-tests, Docker file, CI workflow, Render blueprint.
+tests and a CI workflow.
 
 Spend your first session just reading the code and breaking it on purpose.
 Change something, run `pytest`, see what fails. That is the fastest way to
@@ -79,9 +79,6 @@ Do **not** add a catch-all rewrite in `vercel.json` pointing at an entrypoint.
 Vercel now passes the rewritten path to the app, so FastAPI receives
 `/api/index` for every request, matches no route and returns 404 on everything.
 The fix was deleting that config, not adding to it.
-
-The repo also keeps a `render.yaml` and a `Dockerfile`, so the app can be
-deployed to Render or run as a container without changes.
 
 ### 3. Tell the app its own address
 

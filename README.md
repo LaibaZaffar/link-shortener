@@ -95,7 +95,6 @@ DATABASE_URL="postgresql://..." python -m app.init_db
 ```
 
 Requests are served by serverless functions, so the first one after a quiet
-period takes about a second to warm up. A `Dockerfile` is included too, if you
-would rather run it as a container.
+period takes about a second to warm up.
 
 See [ROADMAP.md](ROADMAP.md) for the full walkthrough.
