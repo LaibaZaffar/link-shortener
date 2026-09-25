@@ -1,5 +1,6 @@
 """Tests that drive the app the way a browser would."""
 
+import os
 from datetime import datetime, timedelta, timezone
 
 from sqlmodel import select
@@ -292,3 +293,52 @@ def test_flash_message_only_shows_once(logged_in):
 
     assert "Created" in landing.text
     assert "Created" not in logged_in.get("/").text   # gone on the next visit
+
+
+def test_init_db_actually_creates_the_tables(tmp_path):
+    """Regression: create_all() creates nothing unless the models are imported.
+
+    This once "succeeded" while creating zero tables, which would only have
+    shown up as a crash on the deployed site.
+    """
+    import sqlite3
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    database = tmp_path / "fresh.db"
+    project_root = Path(__file__).resolve().parent.parent
+
+    result = subprocess.run(
+        [sys.executable, "-m", "app.init_db"],
+        cwd=project_root,
+        env={**os.environ, "DATABASE_URL": f"sqlite:///{database}"},
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    tables = {
+        row[0]
+        for row in sqlite3.connect(database).execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        )
+    }
+    assert {"user", "link", "click"} <= tables
+
+
+def test_init_db_rejects_a_url_that_is_not_a_url(tmp_path):
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    result = subprocess.run(
+        [sys.executable, "-m", "app.init_db"],
+        cwd=Path(__file__).resolve().parent.parent,
+        env={**os.environ, "DATABASE_URL": "paste-your-neon-string-here"},
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    assert "does not look like a database address" in result.stderr

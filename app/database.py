@@ -43,6 +43,11 @@ engine = create_engine(
 
 def create_db_and_tables() -> None:
     """Creates any missing tables. Safe to call on every startup."""
+    # Importing the models is what registers them on SQLModel.metadata.
+    # Without this line create_all() finds nothing to create and silently
+    # does nothing, which is much harder to debug than an error.
+    from app import models  # noqa: F401
+
     SQLModel.metadata.create_all(engine)
 
 
